@@ -348,9 +348,14 @@ module Formtastic #:nodoc:
     #
     def label(method, options_or_text=nil, options=nil)
       if options_or_text.is_a?(Hash)
-        return "" if options_or_text[:label] == false
-        options = options_or_text
-        text = options.delete(:label)
+          if options_or_text[:label].is_a?(Proc)
+              options = options_or_text
+              proc = options.delete(:label)
+          else
+            return "" if options_or_text[:label] == false
+            options = options_or_text
+            text = options.delete(:label)
+          end
       else
         text = options_or_text
         options ||= {}
@@ -364,7 +369,11 @@ module Formtastic #:nodoc:
         options[:class] ||= 'label'
         template.content_tag(:span, text, options)
       else
-        super(input_name, text, options)
+          if proc
+              super(input_name, proc.call(method), options)
+          else
+              super(input_name, text, options)
+          end
       end
     end
 
